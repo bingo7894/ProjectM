@@ -1,0 +1,227 @@
+e#include <SPI.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include <SoftwareSerial.h>
+#include <ESP8266WiFi.h>
+#include <DHT.h>
+
+SoftwareSerial mySerial(D5, D6);
+unsigned int pm1 = 0;
+unsigned int pm2_5 = 0;
+unsigned int pm10 = 0;
+
+#define SCREEN_ADDRESS 0x3C
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 32
+#define OLED_RESET -1
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+#define DHTPIN D4        // DHT22 pin
+#define DHTTYPE DHT22    // DHT22 type
+#define MQ5_PIN A0       // MQ-5 analog pin
+
+DHT dht(DHTPIN, DHTTYPE);
+int displayMode = 0; // 0 = DHT, 1 = MQ-5, 2 = PM
+unsigned long lastSwitchTime = 0; // Time to switch modes
+const unsigned long switchInterval = 10000; // Switch every 10 seconds
+
+const char* ssid = "Tree-3302";  
+const char* password = "33023302"; 
+const char* server = "http://192.168.1.47:9901/index.php"; 
+
+void setup() {
+    Serial.begin(115200);
+    WiFi.begin(ssid, password);
+    mySerial.begin(9600); // Start Serial for PM
+    dht.begin(); // Start DHT sensor
+
+    // Initialize OLED display
+    if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
+        Serial.println(F("SSD1306 allocation failed"));
+        while (true); // Don't proceed, loop forever
+    }
+
+    // Clear the buffer
+    display.clearDisplay();
+
+    // Connect to WiFi
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(1000);
+        Serial.println("Connecting to WiFi...");
+    }
+    Serial.println("Connected to WiFi");
+    Serial.print("IP Address: ");
+    Serial.println(WiFi.localIP()); // Display IP Address
+}
+
+void animateLoading() {
+    display.clearDisplay();
+    display.setTextSize(2);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(30, 10);
+    display.print("Loading");
+    display.display();
+    
+    for (int i = 0; i < 3; i++) {
+        delay(300);
+        display.setCursor(30, 10);
+        display.print("."); // Add a dot for animation
+        display.display();
+        delay(300);
+        display.setCursor(30, 10);
+        display.print(" "); // Clear the dot
+        display.display();
+    }
+}
+
+void displayData(float temperature, float humidity, int mq5Value) {
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+
+    // Draw a border
+    display.drawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SSD1306_WHITE);
+
+    // Display data based on selected mode
+    if (displayMode == 0) {
+        display.setCursor(2, 2);
+        display.setTextSize(2); // Larger text
+        display.print("T: ");
+        display.print(temperature);
+        display.println(" C");
+        
+        display.setCursor(2, 20); // Move cursor down
+        display.setTextSize(1); // Smaller text
+        display.print("RH: ");
+        display.print(humidity);
+        display.println(" %");
+        
+    } else if (displayMode == 1) {
+        String mq5Text = "Gas: " + String(mq5Value);
+        int textWidth = mq5Text.length() * 12; // Approximate width of the text (12 pixels per character)
+        int x = (SCREEN_WIDTH - textWidth) / 2; // Calculate x position for centering
+        display.setCursor(x, 10); // Center vertically
+        display.setTextSize(2); // Larger text
+        display.print(mq5Text);
+        
+    } else if (displayMode == 2) {
+        // Center PM values
+        display.setTextSize(1);
+        
+        // PM 1
+        String pm1Text = "PM 1: " + String(pm1);
+        int pm1Width = pm1Text.length() * 12; // Approximate width
+        display.setCursor((SCREEN_WIDTH - pm1Width) / 2, 2);
+        display.print(pm1Text);
+        
+        // PM 2.5
+        String pm2_5Text = "PM 2.5: " + String(pm2_5);
+        int pm2_5Width = pm2_5Text.length() * 12; // Approximate width
+        display.setCursor((SCREEN_WIDTH - pm2_5Width) / 2, 12);
+        display.print(pm2_5Text);
+        
+        // PM 10
+        String pm10Text = "PM 10: " + String(pm10);
+        int pm10Width = pm10Text.length() * 12; // Approximate width
+        display.setCursor((SCREEN_WIDTH - pm10Width) / 2, 22);
+        display.print(pm10Text);
+    }
+    
+    display.display();
+}
+
+void sendData() {
+    WiFiClient client;
+    if (client.connect("192.168.1.47", 9901)) {
+        float temperature = dht.readTemperature(); // Read temperature from DHT22
+        float humidity = dht.readHumidity(); // Read humidity from DHT22
+
+        if (isnan(temperature) || isnan(humidity)) {
+            Serial.println("Failed to read from sensors!");
+            return;
+        }
+
+        // Read PM sensor data
+        readPMData();
+
+        // Create JSON for sending data
+        String json = "{\"temperature\": " + String(temperature) + 
+                      ", \"humidity\": " + String(humidity) + 
+                      ", \"pm1\": " + String(pm1) + 
+                      ", \"pm2_5\": " + String(pm2_5) + 
+                      ", \"pm10\": " + String(pm10) + 
+                      ", \"mq5\": " + String(analogRead(MQ5_PIN)) + "}";
+
+        Serial.println("Sending JSON: " + json);
+
+        // Send data to the server
+        client.println("POST /index.php HTTP/1.1");
+        client.println("Host: 192.168.1.47:9901");
+        client.println("Content-Type: application/json");
+        client.print("Content-Length: ");
+        client.println(json.length());
+        client.println();
+        client.println(json);
+
+        while (client.connected() || client.available()) {
+            if (client.available()) {
+                String line = client.readStringUntil('\n');
+                Serial.println(line);
+            }
+        }
+    } else {
+        Serial.println("Connection failed");
+    }
+    client.stop();
+}
+
+void readPMData() {
+    int index = 0;
+    char value;
+    char previousValue;
+
+    while (mySerial.available()) {
+        value = mySerial.read();
+        if ((index == 0 && value != 0x42) || (index == 1 && value != 0x4D)) {
+            Serial.println("Cannot find the data header.");
+            break;
+        }
+
+        if (index == 4 || index == 6 || index == 8 || index == 10 || index == 12 || index == 14) {
+            previousValue = value;
+        } else if (index == 5) {
+            pm1 = 256 * previousValue + value;
+        } else if (index == 7) {
+            pm2_5 = 256 * previousValue + value;
+        } else if (index == 9) {
+            pm10 = 256 * previousValue + value;
+        }
+
+        index++;
+    }
+    while (mySerial.available()) mySerial.read();
+}
+
+void loop() {
+    sendData();
+
+    // Read from DHT sensor
+    float temperature = dht.readTemperature();
+    float humidity = dht.readHumidity();
+    int mq5Value = analogRead(MQ5_PIN);
+
+    // Switch mode every 10 seconds
+    if (millis() - lastSwitchTime >= switchInterval) {
+        displayMode++;
+        if (displayMode > 2) {
+            displayMode = 0; // Loop back to the first mode
+        }
+        lastSwitchTime = millis();
+        animateLoading(); // Call animation when switching modes
+    }
+
+    // Display the data
+    displayData(temperature, humidity, mq5Value);
+    delay(1000); // Update every second
+}
