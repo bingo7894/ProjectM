@@ -5,7 +5,7 @@
 #include <SoftwareSerial.h>
 #include <ESP8266WiFi.h>
 #include <DHT.h>
-
+//
 SoftwareSerial mySerial(D5, D6);
 unsigned int pm1 = 0;
 unsigned int pm2_5 = 0;
