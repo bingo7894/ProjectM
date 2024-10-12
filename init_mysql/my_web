@@ -1,0 +1,10 @@
+CREATE TABLE sensor_data ( 
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    temperature FLOAT,        -- ค่าอุณหภูมิจาก DHT11
+    humidity FLOAT,           -- ค่าความชื้นจาก DHT11
+    mq5_value INT,            -- ค่าจากเซ็นเซอร์ MQ-5
+    pms_pm1 FLOAT,            -- ค่า PM1 จาก PMS3005
+    pms_pm2_5 FLOAT,          -- ค่า PM2.5 จาก PMS3005
+    pms_pm10 FLOAT,           -- ค่า PM10 จาก PMS3005
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- เวลาที่บันทึกข้อมูล
+);
