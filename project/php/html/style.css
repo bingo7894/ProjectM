@@ -1,0 +1,148 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #e9ecef;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    background-color: #ffffff;
+}
+
+h1,
+h2 {
+    color: #333;
+    text-align: center;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+.data-table th,
+.data-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+
+.data-table th {
+    background-color: #f2f2f2;
+}
+
+.button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.button:hover {
+    background-color: #0056b3;
+}
+
+.chart-legend {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.legend-label {
+    margin: 0 10px;
+    padding: 5px;
+    border-radius: 5px;
+    color: white;
+}
+
+.download-button {
+    background-color: #4CAF50;
+    /* Green */
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 10px 0;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.download-button:hover {
+    background-color: #45a049;
+}
+
+footer {
+    background-color: #333;
+    color: #fff;
+    padding: 40px 0;
+    margin-top: 50px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.footer-container {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.footer-logo h3 {
+    margin: 0;
+    color: #4CAF50;
+    font-size: 24px;
+}
+
+.footer-links a {
+    color: #fff;
+    margin: 0 15px;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+.footer-links a:hover {
+    color: #4CAF50;
+    text-decoration: underline;
+}
+
+.footer-socials a {
+    color: #fff;
+    margin: 0 10px;
+    font-size: 20px;
+}
+
+.footer-socials a:hover {
+    color: #4CAF50;
+}
+
+.footer-bottom {
+    border-top: 1px solid #444;
+    padding-top: 10px;
+    margin-top: 20px;
+}
+
+.footer-bottom a {
+    color: #4CAF50;
+    text-decoration: none;
+}
+
+.footer-bottom a:hover {
+    text-decoration: underline;
+}
