@@ -1,3 +1,3 @@
 # Hardware Design
 
-![Hardware Design](images/Hardware.png)
+![Hardware Design](images/Hardware.jpg)
