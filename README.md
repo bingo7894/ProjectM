@@ -5,3 +5,7 @@
 # Flowchart
 
 ![FlowchartMircro](images/FlowchartMircro.jpg)
+
+# Circuit Daigram
+![CircuitDaigram](images/FlowchartMircro.jpg)
+
