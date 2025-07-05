@@ -4,4 +4,4 @@
 
 # Flowchart
 
-![FlowchartMircro](images/FlowchartMircro.png)
+![FlowchartMircro](images/FlowchartMircro.jpg)
