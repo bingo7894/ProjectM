@@ -9,3 +9,6 @@
 # Circuit Daigram
 ![CircuitDaigram](images/CircuitDaigram.jpg)
 
+# Read more
+[📄 ดาวน์โหลด Document (PDF)](docs/Document.pdf)
+
